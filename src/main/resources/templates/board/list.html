@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="/css/board.css">
+<title>게시물 목록 보기</title>
+<style>
+.bottom_menu {
+	margin-top: 20px;
+}
+
+.bottom_menu > a:link, .bottom_menu > a:visited {
+	background-color: #FFA500;
+	color: maroon;
+	padding: 15px 25px;
+	text-align: center;
+	display: inline-block;
+	text-decoration: none;
+}
+
+.bottom_menu > a:hover, .bottom_menu > a:active {
+	background-color: #1E90FF;
+	text-decoration: none;
+}
+
+</style>
+<script>
+
+	const search = () => {
+		
+		const keyword = document.querySelector('#keyword');
+		document.location.href='/board/list?page=1&keyword=' + keyword.value;
+		
+	}
+	
+	const logout = () => {
+		if(confirm('로그아웃하시겠습니까?')){
+			
+			let authkey = getCookie('authkey');
+			if(authkey !== undefined)
+				document.cookie = 'authkey=' + authkey + '; path=/; max-age=0';
+			document.location.href='/member/logout';
+			
+		}		
+	}
+	
+	const getCookie = (name) => {
+		
+		const cookies = document.cookie.split(`; `).map((el) => el.split('='));
+		  let getItem = [];
+	
+		  for (let i = 0; i < cookies.length; i++) {		    
+		    if (cookies[i][0] === name) {
+		      getItem.push(cookies[i][1]);
+		      break;
+		    }
+		  }
+		  if (getItem.length > 0) {
+				console.log(getItem[0]);
+		    	return decodeURIComponent(getItem[0]);
+		  }		
+	}
+	
+	const press = () => {
+		if(event.keyCode==13) search();
+	}
+
+</script>
+
+</head>
+<body>
+
+	<script>
+		const email = '[[${session.email}]]';
+		if(email == '') document.location.href='/member/login';
+	</script>
+	
+	<div>
+		<img id="topBanner" src="/images/logo.jpg" title="서울기술교육센터">	
+	</div>
+	
+	<div class="tableDiv">
+		<h1>게시물 목록 보기</h1>
+		<input style="width: 40%;height: 30px; border: 2px solid #168; font-size: 16px;" 
+			type="text" name="keyword" id="keyword" placeholder="검색할 제목,작성자이름 및 내용을 입력해 주세요" onkeydown="press()">
+		<input style="width: 5%; height: 30px; background: #158; color: white; font-weight: bold; cursor: pointer;"
+			type="button" value="검색" onclick="search()">
+		<br><br>
+		<table class="InfoTable">
+			<tr>
+				<th>번호</th>		
+				<th>제목</th>
+				<th>작성자</th>
+				<th>작성일</th>
+				<th>조회수</th>
+			</tr>
+			
+			<tbody>
+			<th:block th:if="${list != null}">
+				<tr th:each="list: ${list}"  onmouseover="this.style.background='#46D2D2'" onmouseout="this.style.background='white'">
+					<td th:text="${list.seqno}"></td>
+					<td style="text-align:left"><a id="hypertext" th:href="@{'/board/view?seqno=' + ${list.seqno} + '&page=' + ${page} + '&keyword=' + ${keyword}}"  
+						onmouseover="this.style.textDecoration='underline'"  
+						onmouseout="this.style.textDecoration='none'"><span th:text="${list.title}"></span></a></td>
+					<td th:text="${list.writer}"></td>
+					<td th:text="${#temporals.format(list.regdate,'yyyy-MM-dd HH:mm:ss')}"></td>				
+					<td th:text="${list.hitno}"></td>
+				</tr>						
+			</th:block>
+			<th:block th:if="${list == null}">
+				<tr>
+					<td colspan="5">등록된 게시물이 없습니다.</td>
+				</tr>
+			</th:block>	
+			</tbody>	
+		</table>
+		<br>
+		<div>[(${pageList})]</div>
+		<br>
+		<div class="bottom_menu">
+			<a href="/board/list?page=1">처음으로</a>&nbsp;&nbsp;
+			<a href="/board/write">글쓰기</a>&nbsp;&nbsp;
+			<a href="/board/chat">채팅 하기</a>&nbsp;&nbsp;
+			<a href="/member/memberInfo">사용자관리</a>&nbsp;&nbsp;
+			<th:block th:if="${session.role == 'MASTER'}">
+				<a href="/master/sysmanage">시스템관리</a>&nbsp;&nbsp;
+			</th:block>
+			<a href="javascript:logout()">로그아웃</a>		
+		</div>
+		<br><br>
+		
+	</div>
+
+</body>
+</html>
